@@ -1,0 +1,105 @@
+% Copyright 2020 ArctosLabs Scandinavia AB
+%
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+%
+%    http://www.apache.org/licenses/LICENSE-2.0
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+% implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
+{%- macro vim_accounts(vim_accounts) -%}
+enum  Vims = {
+{%- for vim in vim_accounts %}
+{{vim}}{% if loop.nextitem is defined%},{% endif %}
+{%- endfor -%}
+}; % The vim-accounts
+{%- endmacro -%}
+
+{%- macro variables_vnf(ns_desc) -%}
+{%- for vnf in ns_desc -%}
+{%- if vnf.vim_account %}
+Vims: VNF{{vnf.vnf_id}} = {{vnf.vim_account}};
+{%- else %}
+var Vims: VNF{{vnf.vnf_id}};
+{%- endif -%}
+{% endfor -%}
+{%- endmacro -%}
+
+{%- macro trp_link_latency(trp_link_latency) -%}
+array[Vims, Vims] of int: trp_link_latency = [
+{%- for row in trp_link_latency -%}
+|
+{%- for col in row -%}
+{{col}},
+{%- endfor %}
+{% endfor -%}
+|]; % Transport link latency between data centers
+{%- endmacro -%}
+
+{%- macro trp_link_jitter(trp_link_jitter) -%}
+array[Vims, Vims] of int: trp_link_jitter = [
+{%- for row in trp_link_jitter -%}
+|
+{%- for col in row -%}
+{{col}},
+{%- endfor %}
+{% endfor -%}
+|]; % Transport link jitter between data centers
+{%- endmacro -%}
+
+{%- macro trp_link_price_list(trp_link_price_list) -%}
+array[Vims, Vims] of int: trp_link_price_list = [
+{%- for row in trp_link_price_list -%}
+|
+{%- for col in row -%}
+{{col}},
+{%- endfor %}
+{% endfor -%}
+|]; % Transport link price list
+{%- endmacro -%}
+
+{%- macro vnf_price_list_per_vim(ns_desc) -%}
+{%- for vnf in ns_desc -%}
+array[Vims] of int: vim_price_list_{{vnf.vnf_id}} = [
+{%- for price in vnf.vnf_price_per_vim -%}
+{{price}}{% if loop.nextitem is defined%},{% endif %}
+{%- endfor -%}
+];
+{% endfor %}
+{%- endmacro -%}
+
+{%- macro vld_constraints(vld_desc) -%}
+{%- for cp in vld_desc -%}
+{%- if 'latency' in cp.keys()%}
+constraint trp_link_latency[VNF{{cp.cp_refs[0]}}, VNF{{cp.cp_refs[1]}}] <= {{cp.latency}};
+{% endif -%}
+{% endfor -%}
+{%- for cp in vld_desc -%}
+{%- if 'jitter' in cp.keys()%}
+constraint trp_link_jitter[VNF{{cp.cp_refs[0]}}, VNF{{cp.cp_refs[1]}}] <= {{cp.jitter}};
+{% endif -%}
+{% endfor -%}
+{%- endmacro -%}
+
+{% macro transport_cost(vld_desc) -%}
+var int: used_transport_cost =
+{%- if not vld_desc -%}
+0;
+{% else %}
+{%- for cp in vld_desc -%}
+trp_link_price_list[VNF{{cp.cp_refs[0]}}, VNF{{cp.cp_refs[1]}}]{% if loop.nextitem is defined %}+{% else %};{% endif %}
+{% endfor -%}
+{% endif -%}
+{%- endmacro -%}
+
+{%- macro used_vim_cost(ns_desc) -%}
+var int: used_vim_cost =
+{%- for vnf in ns_desc -%}
+vim_price_list_{{vnf.vnf_id}}[VNF{{vnf.vnf_id}}]{% if loop.nextitem is defined %}+{% else %};{% endif %}
+{% endfor -%}
+{%- endmacro -%}

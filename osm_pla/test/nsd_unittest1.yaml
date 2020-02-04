@@ -1,0 +1,66 @@
+# Copyright 2020 ArctosLabs Scandinavia AB
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+nsd:nsd-catalog:
+    nsd:
+    -   constituent-vnfd:
+        -   member-vnf-index: 1
+            vnfd-id-ref: cirros_vnfd_v2
+        -   member-vnf-index: 2
+            vnfd-id-ref: cirros_vnfd_v2
+        -   member-vnf-index: 3
+            vnfd-id-ref: cirros_vnfd_v2
+        description: Placement constraints NSD
+        id: three_vnf_constrained_nsd
+        name: three_vnf_constrained_nsd
+        short-name: three_vnf_constrained_nsd
+        vendor: ArctosLabs
+        version: '1.0'
+        vld:
+        -   id: three_vnf_constrained_nsd_vld1
+            link-constraint:
+            -   constraint-type: LATENCY
+                value: 150
+            -   constraint-type: JITTER
+                value: 30
+            mgmt-network: !!bool False
+            name: ns_constrained_nsd_vld1
+            short-name: ns_constrained_nsd_vld1
+            type: ELAN
+            vim-network-name: private
+            vnfd-connection-point-ref:
+            -   member-vnf-index-ref: 1
+                vnfd-connection-point-ref: vnf-cp0
+                vnfd-id-ref: cirros_vnfd_v2
+            -   member-vnf-index-ref: 2
+                vnfd-connection-point-ref: vnf-cp0
+                vnfd-id-ref: cirros_vnfd_v2
+        -   id: three_vnf_constrained_nsd_vld2
+            link-constraint:
+            -   constraint-type: LATENCY
+                value: 90
+            -   constraint-type: JITTER
+                value: 30
+            mgmt-network: !!bool False
+            name: ns_constrained_nsd_vld2
+            short-name: ns_constrained_nsd_vld2
+            type: ELAN
+            vim-network-name: private
+            vnfd-connection-point-ref:
+            -   member-vnf-index-ref: 2
+                vnfd-connection-point-ref: vnf-cp0
+                vnfd-id-ref: cirros_vnfd_v2
+            -   member-vnf-index-ref: 3
+                vnfd-connection-point-ref: vnf-cp0
+                vnfd-id-ref: cirros_vnfd_v2

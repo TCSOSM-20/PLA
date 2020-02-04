@@ -31,7 +31,7 @@ deb_dist
 pool
 dist
 
-#local stuff files that end in ".local" or folders called "local"
+#local stuff, e.g. files that end in ".local" or folders called "local"
 *.local
 local
-
+venv

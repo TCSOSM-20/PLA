@@ -1,0 +1,104 @@
+# Copyright 2020 ArctosLabs Scandinavia AB
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+nsd:nsd-catalog:
+  nsd:
+  - description: Four cirros VNF latency and jitter constrained
+    id: test_five_nsd
+    name: test_five_nsd
+    short-name: test_five_nsd
+    vendor: ArctosLabs
+    version: '1.0'
+    constituent-vnfd:
+    - member-vnf-index: 1
+      vnfd-id-ref: test_one_a_vnfd
+    - member-vnf-index: 2
+      vnfd-id-ref: test_two_vnfd
+    - member-vnf-index: 3
+      vnfd-id-ref: test_one_a_vnfd
+    - member-vnf-index: 4
+      vnfd-id-ref: test_one_a_vnfd
+    vld:
+    - name: vl_two_vld
+      id: vl_two_vld
+      mgmt-network: !!bool False
+      type: ELAN
+      link-constraint:
+      - constraint-type: LATENCY
+        value: 120
+      - constraint-type: JITTER
+        value: 20
+      vnfd-connection-point-ref:
+      - member-vnf-index-ref: '1'
+        vnfd-connection-point-ref: vnf_cp_one_cp
+        vnfd-id-ref: test_one_a_vnfd
+      - member-vnf-index-ref: '2'
+        vnfd-connection-point-ref: vnf_cp_one_cp
+        vnfd-id-ref: test_two_vnfd
+    - name: vl_four_vld
+      id: vl_four_vld
+      mgmt-network: !!bool False
+      type: ELAN
+      link-constraint:
+      - constraint-type: LATENCY
+        value: 50
+      - constraint-type: JITTER
+        value: 10
+      vnfd-connection-point-ref:
+      - member-vnf-index-ref: '2'
+        vnfd-connection-point-ref: vnf_cp_three_cp
+        vnfd-id-ref: test_two_vnfd
+      - member-vnf-index-ref: '4'
+        vnfd-connection-point-ref: vnf_cp_one_cp
+        vnfd-id-ref: test_one_a_vnfd
+    - name: vl_five_vld
+      id: vl_five_vld
+      mgmt-network: !!bool False
+      type: ELAN
+      link-constraint:
+      - constraint-type: LATENCY
+        value: 20
+      - constraint-type: JITTER
+        value: 10
+      vnfd-connection-point-ref:
+      - member-vnf-index-ref: '2'
+        vnfd-connection-point-ref: vnf_cp_two_cp
+        vnfd-id-ref: test_two_vnfd
+      - member-vnf-index-ref: '3'
+        vnfd-connection-point-ref: vnf_cp_one_cp
+        vnfd-id-ref: test_one_a_vnfd
+    - name: vld_vnf_mgmt
+      id: vld_vnf_mgmt1
+      mgmt-network: !!bool True
+      type: ELAN
+      vnfd-connection-point-ref:
+      - member-vnf-index-ref: '1'
+        vnfd-connection-point-ref: vnf_cp_two_cp
+        vnfd-id-ref: test_one_a_vnfd
+      - member-vnf-index-ref: '3'
+        vnfd-connection-point-ref: vnf_cp_two_cp
+        vnfd-id-ref: test_one_a_vnfd
+    - name: vld_vnf_mgmt
+      id: vld_vnf_mgmt2
+      mgmt-network: !!bool True
+      type: ELAN
+      vnfd-connection-point-ref:
+      - member-vnf-index-ref: '1'
+        vnfd-connection-point-ref: vnf_cp_two_cp
+        vnfd-id-ref: test_one_a_vnfd
+      - member-vnf-index-ref: '4'
+        vnfd-connection-point-ref: vnf_cp_two_cp
+        vnfd-id-ref: test_one_a_vnfd
+
+
