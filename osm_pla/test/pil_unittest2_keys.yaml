@@ -1,0 +1,61 @@
+# Copyright 2020 ArctosLabs Scandinavia AB
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# POP Interconnecting Link (PIL), price list and latency
+pil:
+  - pil_description: Link between OpenStack1 and OpenStack2
+    pil_price: 12
+    pil_latency: 120
+    pil_jitter: 1200
+    project: hackfest_project_a
+    pil_endpoints:
+      - OpenStack1
+      - OpenStack2
+  - pil_description: Link between OpenStack1 and OpenStack3
+    pil_price: 13
+    pil_latency: 130
+    project: hackfest_project_a
+    pil_endpoints:
+      - OpenStack1
+      - OpenStack3
+  - pil_description: Link between OpenStack1 and OpenStack4
+    pil_price: 14
+    pil_jitter: 1400
+    project: hackfest_project_a
+    pil_endpoints:
+      - OpenStack1
+      - OpenStack4
+  - pil_description: Link between OpenStack2 and OpenStack3
+    pil_price: 23
+    project: hackfest_project_a
+    pil_endpoints:
+      - OpenStack2
+      - OpenStack3
+  - pil_description: Link between OpenStack2 and OpenStack4
+    pil_price: 24
+    pil_latency: 240
+    pil_jitter: 2400
+    project: hackfest_project_a
+    pil_endpoints:
+      - OpenStack2
+      - OpenStack4
+  - pil_description: Link between OpenStack3 and OpenStack4
+    pil_price: 34
+    pil_latency: 340
+    pil_jitter: 3400
+    project: hackfest_project_a
+    pil_endpoints:
+      - OpenStack3
+      - OpenStack4

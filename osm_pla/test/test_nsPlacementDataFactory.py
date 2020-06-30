@@ -169,7 +169,7 @@ class TestNsPlacementDataFactory(TestCase):
         FIXME temporary, we will need more control over vim_urls and _id for test purpose - make a generator
         :return: vim_url and _id as dict, i.e. extract these from vim_accounts data
         """
-        return {_['vim_url']: _['_id'] for _ in vim_accounts}
+        return {_['name']: _['_id'] for _ in vim_accounts}
 
     def _adjust_path(self, file):
         """In case we are not running from test directory,
@@ -211,13 +211,13 @@ class TestNsPlacementDataFactory(TestCase):
         price_list_file = "vnf_price_list.yaml"
         with open(str(Path(self._adjust_path(price_list_file)))) as pl_fd:
             price_list_data = yaml.safe_load_all(pl_fd)
-            return {i['vnfd']: {i1['vim_url']: i1['price'] for i1 in i['prices']} for i in next(price_list_data)}
+            return {i['vnfd']: {i1['vim_name']: i1['price'] for i1 in i['prices']} for i in next(price_list_data)}
 
     def _produce_ut_vnf_test_price_list(self, price_list):
         price_list_file = price_list
         with open(str(Path(self._adjust_path(price_list_file)))) as pl_fd:
             price_list_data = yaml.safe_load_all(pl_fd)
-            return {i['vnfd']: {i1['vim_url']: i1['price'] for i1 in i['prices']} for i in next(price_list_data)}
+            return {i['vnfd']: {i1['vim_name']: i1['price'] for i1 in i['prices']} for i in next(price_list_data)}
 
     def test__produce_trp_link_characteristics_link_latency_with_more_vims(self):
         """
@@ -229,7 +229,7 @@ class TestNsPlacementDataFactory(TestCase):
             self._produce_ut_vim_accounts_info(TestNsPlacementDataFactory.vim_accounts_more_vims),
             self._produce_ut_vnf_price_list(),
             nsd=None,
-            pil_info=self._populate_pil_info('pil_unittest1.yaml'),
+            pil_info=self._populate_pil_info('pil_unittest1_keys.yaml'),
             pinning=None)
         pil_latencies = nspdf._produce_trp_link_characteristics_data('pil_latency')
         content_produced = [i for row in pil_latencies for i in row]
@@ -245,7 +245,7 @@ class TestNsPlacementDataFactory(TestCase):
             self._produce_ut_vim_accounts_info(TestNsPlacementDataFactory.vim_accounts_fewer_vims),
             self._produce_ut_vnf_price_list(),
             nsd=None,
-            pil_info=self._populate_pil_info('pil_unittest1.yaml'),
+            pil_info=self._populate_pil_info('pil_unittest1_keys.yaml'),
             pinning=None)
         pil_latencies = nspdf._produce_trp_link_characteristics_data('pil_latency')
         content_produced = [i for row in pil_latencies for i in row]
@@ -279,7 +279,7 @@ class TestNsPlacementDataFactory(TestCase):
         nspdf = NsPlacementDataFactory(self._produce_ut_vim_accounts_info(TestNsPlacementDataFactory.vim_accounts),
                                        self._produce_ut_vnf_price_list(),
                                        nsd=None,
-                                       pil_info=self._populate_pil_info('pil_unittest1.yaml'), pinning=None)
+                                       pil_info=self._populate_pil_info('pil_unittest1_keys.yaml'), pinning=None)
         pil_latencies = nspdf._produce_trp_link_characteristics_data('pil_latency')
         content_produced = [i for row in pil_latencies for i in row]
         self.assertEqual(Counter(content_expected), Counter(content_produced), 'trp_link_latency incorrect')
@@ -293,7 +293,7 @@ class TestNsPlacementDataFactory(TestCase):
         nspdf = NsPlacementDataFactory(self._produce_ut_vim_accounts_info(TestNsPlacementDataFactory.vim_accounts),
                                        self._produce_ut_vnf_price_list(),
                                        nsd=None,
-                                       pil_info=self._populate_pil_info('pil_unittest1.yaml'), pinning=None)
+                                       pil_info=self._populate_pil_info('pil_unittest1_keys.yaml'), pinning=None)
         pil_jitter = nspdf._produce_trp_link_characteristics_data('pil_jitter')
         content_produced = [i for row in pil_jitter for i in row]
         self.assertEqual(Counter(content_expected), Counter(content_produced), 'trp_link_jitter incorrect')
@@ -306,7 +306,7 @@ class TestNsPlacementDataFactory(TestCase):
         nspdf = NsPlacementDataFactory(self._produce_ut_vim_accounts_info(self.vim_accounts_fewer_vims),
                                        self._produce_ut_vnf_price_list(),
                                        nsd=None,
-                                       pil_info=self._populate_pil_info('pil_unittest1.yaml'), pinning=None)
+                                       pil_info=self._populate_pil_info('pil_unittest1_keys.yaml'), pinning=None)
         pil_latencies = nspdf._produce_trp_link_characteristics_data('pil_jitter')
         content_produced = [i for row in pil_latencies for i in row]
         self.assertEqual(Counter(content_expected), Counter(content_produced), 'trp_link_jitter incorrect')
@@ -320,7 +320,7 @@ class TestNsPlacementDataFactory(TestCase):
         nspdf = NsPlacementDataFactory(self._produce_ut_vim_accounts_info(self.vim_accounts_more_vims),
                                        self._produce_ut_vnf_price_list(),
                                        nsd=None,
-                                       pil_info=self._populate_pil_info('pil_unittest1.yaml'), pinning=None)
+                                       pil_info=self._populate_pil_info('pil_unittest1_keys.yaml'), pinning=None)
         pil_latencies = nspdf._produce_trp_link_characteristics_data('pil_jitter')
         content_produced = [i for row in pil_latencies for i in row]
         self.assertEqual(Counter(content_expected), Counter(content_produced), 'trp_link_jitter incorrect')
@@ -333,7 +333,7 @@ class TestNsPlacementDataFactory(TestCase):
         nspdf = NsPlacementDataFactory(self._produce_ut_vim_accounts_info(TestNsPlacementDataFactory.vim_accounts),
                                        self._produce_ut_vnf_price_list(),
                                        nsd=None,
-                                       pil_info=self._populate_pil_info('pil_unittest1.yaml'), pinning=None)
+                                       pil_info=self._populate_pil_info('pil_unittest1_keys.yaml'), pinning=None)
         pil_prices = nspdf._produce_trp_link_characteristics_data('pil_price')
         content_produced = [i for row in pil_prices for i in row]
         self.assertEqual(Counter(content_expected), Counter(content_produced), 'invalid trp link prices')
@@ -346,7 +346,7 @@ class TestNsPlacementDataFactory(TestCase):
         nspdf = NsPlacementDataFactory(self._produce_ut_vim_accounts_info(self.vim_accounts_fewer_vims),
                                        self._produce_ut_vnf_price_list(),
                                        nsd=None,
-                                       pil_info=self._populate_pil_info('pil_unittest1.yaml'), pinning=None)
+                                       pil_info=self._populate_pil_info('pil_unittest1_keys.yaml'), pinning=None)
         pil_prices = nspdf._produce_trp_link_characteristics_data('pil_price')
         content_produced = [i for row in pil_prices for i in row]
         self.assertEqual(Counter(content_expected), Counter(content_produced), 'invalid trp link prices')
@@ -356,7 +356,7 @@ class TestNsPlacementDataFactory(TestCase):
         nspdf = NsPlacementDataFactory(self._produce_ut_vim_accounts_info(TestNsPlacementDataFactory.vim_accounts),
                                        self._produce_ut_vnf_price_list(),
                                        nsd=None,
-                                       pil_info=self._populate_pil_info('pil_unittest2.yaml'), pinning=None)
+                                       pil_info=self._populate_pil_info('pil_unittest2_keys.yaml'), pinning=None)
         pil_jitter = nspdf._produce_trp_link_characteristics_data('pil_jitter')
         content_produced = [i for row in pil_jitter for i in row]
         self.assertEqual(Counter(content_expected), Counter(content_produced),
@@ -574,6 +574,18 @@ class TestNsPlacementDataFactory(TestCase):
 
         nsd = self._get_ut_nsd_from_file('nsd_unittest4.yaml')
         nsd = nsd['nsd:nsd-catalog']['nsd'][0]
+        nspdf = NsPlacementDataFactory(self._produce_ut_vim_accounts_info(TestNsPlacementDataFactory.vim_accounts),
+                                       self._produce_ut_vnf_price_list(),
+                                       nsd=nsd,
+                                       pil_info=None, pinning=None,
+                                       order_constraints=None)
+
+        self.assertEqual(vld_desc_expected, nspdf._produce_vld_desc(), "vld_desc_incorrect")
+
+    def test__produce_vld_desc_slice_nsd(self):
+        vld_desc_expected = []
+        nsd = self._get_ut_nsd_from_file('slice_hackfest_middle_nsd.yaml')
+        nsd = nsd['nsd-catalog']['nsd'][0]
         nspdf = NsPlacementDataFactory(self._produce_ut_vim_accounts_info(TestNsPlacementDataFactory.vim_accounts),
                                        self._produce_ut_vnf_price_list(),
                                        nsd=nsd,

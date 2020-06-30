@@ -18,10 +18,8 @@
 
 import asyncio
 import logging
-# import platform
 from pathlib import Path
 
-# import pkg_resources
 import yaml
 from osm_common import dbmemory, dbmongo, msglocal, msgkafka
 
@@ -74,6 +72,13 @@ class Server:
         nslcmop = self.db.get_one("nslcmops", db_filter)
         return nslcmop
 
+    def _get_projects(self):
+        """
+        :return: project name to project id mapping
+        """
+        projects = self.db.get_list("projects")
+        return {project['_id']: project['name'] for project in projects}
+
     def _get_nsd(self, nsd_id):
         """
         :param nsd_id:
@@ -90,16 +95,52 @@ class Server:
         db_filter = {"_id": vim_account_ids}
         return self.db.get_list("vim_accounts", db_filter)
 
-    def _get_vnf_price_list(self, price_list_file_path):
+    def _read_vnf_price_list(self, price_list_file_path):
         """
-        read vnf price list configuration file and reformat its content
-
-        :param: price_list_file: Path to price list file
-        :return: dictionary formatted as {'<vnfd>': {'<vim-url>':'<price>'}}
+        read vnf price list configuration file
+        :param price_list_file_path:
+        :return:
         """
         with open(str(price_list_file_path)) as pl_fd:
-            price_list_data = yaml.safe_load_all(pl_fd)
-            return {i['vnfd']: {i1['vim_url']: i1['price'] for i1 in i['prices']} for i in next(price_list_data)}
+            price_list = yaml.safe_load_all(pl_fd)
+            return next(price_list)
+
+    def _price_list_with_project(self, price_list):
+        """
+        Figure out if this price list is with  project or not.
+        Note: to handle the unlikely event that a project is called 'prices' we do not simply check if 'prices'
+        is in the dict keys for a price list sequence but rather go down one step in the nesting
+        in which we either have
+        1) 'prices:{vim_url:...}' if prices are also per project, or
+        2) '{vim_url:...}' if prices are only per vim
+
+        :param price_list:
+        :return: True if project part of price list, else False
+        """
+        price_list_entry_keys = set(price_list[0].keys())
+        price_list_entry_keys.remove('vnfd')
+        pl_key = price_list_entry_keys.pop()
+        entry_to_check = price_list[0][pl_key][0].keys()
+        return True if 'prices' in entry_to_check else False
+
+    def _get_vnf_price_list(self, price_list_file_path, project_name=None):
+        """
+        read vnf price list configuration file, determine its type and reformat content accordingly
+
+        :param price_list_file_path:
+        :param project_name:
+        :return: dictionary formatted as {'<vnfd>': {'<vim-url>':'<price>'}}
+        """
+        price_list_data = self._read_vnf_price_list(price_list_file_path)
+        if self._price_list_with_project(price_list_data):
+            res = {}
+            for i in price_list_data:
+                price_data = i[project_name] if type(i[project_name]) is dict else i[project_name][0]
+                res_component = {i['vim_name']: i['price'] for i in price_data['prices']}
+                res.update({i['vnfd']: res_component})
+            return res
+        else:
+            return {i['vnfd']: {i1['vim_name']: i1['price'] for i1 in i['prices']} for i in price_list_data}
 
     def _get_pil_info(self, pil_info_file_path):
         """
@@ -126,10 +167,14 @@ class Server:
             nslcmop = self._get_nslcmop(nslcmop_id)
             nsd = self._get_nsd(nslcmop['operationParams']['nsdId'])
             self.log.info("nsd: {}".format(nsd))
+            projects = self._get_projects()
+            self.log.info("projects: {}".format(projects))
+            nslcmop_project = nslcmop['_admin']['projects_read'][0]
+            self.log.info("nslcmop_project: {}".format(nslcmop_project))
             valid_vim_accounts = nslcmop['operationParams']['validVimAccounts']
             vim_accounts_data = self._get_vim_accounts(valid_vim_accounts)
-            vims_information = {_['vim_url']: _['_id'] for _ in vim_accounts_data}
-            price_list = self._get_vnf_price_list(Server.vnf_price_list_file)
+            vims_information = {_['name']: _['_id'] for _ in vim_accounts_data}
+            price_list = self._get_vnf_price_list(Server.vnf_price_list_file, projects[nslcmop_project])
             pil_info = self._get_pil_info(Server.pil_price_list_file)
             pinning = nslcmop['operationParams'].get('vnf')
             self.log.info("pinning: {}".format(pinning))

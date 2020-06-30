@@ -13,15 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import asyncio
-# import platform
-# import random
 import os
 import sys
-# import unittest
 from unittest import TestCase, mock
 from unittest.mock import Mock
 
-# import pkg_resources
 import yaml
 
 from osm_pla.placement.mznplacement import NsPlacementDataFactory, MznPlacementConductor
@@ -264,13 +260,13 @@ class TestServer(TestCase):
         FIXME temporary, we will need more control over vim_urls and _id for test purpose - make a generator
         :return: vim_url and _id as dict, i.e. extract these from vim_accounts data
         """
-        return {_['vim_url']: _['_id'] for _ in list_of_vims}
+        return {_['name']: _['_id'] for _ in list_of_vims}
 
     def _produce_ut_vnf_price_list(self):
         price_list_file = "vnf_price_list.yaml"
         with open(str(Path(price_list_file))) as pl_fd:
             price_list_data = yaml.safe_load_all(pl_fd)
-            return {i['vnfd']: {i1['vim_url']: i1['price'] for i1 in i['prices']} for i in next(price_list_data)}
+            return {i['vnfd']: {i1['vim_name']: i1['price'] for i1 in i['prices']} for i in next(price_list_data)}
 
     def _populate_pil_info(self, file):
         """
@@ -322,10 +318,16 @@ class TestServer(TestCase):
 
     def test__get_vnf_price_list(self):
         server = self.serverSetup()
-        pl = server._get_vnf_price_list(Path(self._adjust_path('./vnf_price_list.yaml')))
-        self.assertIs(type(pl), dict, "price list not a dictionary")
-        for k, v in pl.items():
+        pl1 = server._get_vnf_price_list(Path(self._adjust_path('./vnf_price_list.yaml')))
+        self.assertIs(type(pl1), dict, "price list not a dictionary")
+        for k, v in pl1.items():
             self.assertIs(type(v), dict, "price list values not a dict")
+
+        pl2 = server._get_vnf_price_list(Path(self._adjust_path('./vnf_price_list_keys.yaml')), 'hackfest_project_a')
+        self.assertIs(type(pl2), dict, "price list not a dictionary")
+        for k, v in pl2.items():
+            self.assertIs(type(v), dict, "price list values not a dict")
+        self.assertEqual(pl1, pl2, "non-project and project price lists differ")
 
     def test__get_pil_info(self):
         server = self.serverSetup()
@@ -356,7 +358,9 @@ class TestServer(TestCase):
     @mock.patch.object(Server, '_get_nslcmop')
     @mock.patch.object(Server, '_get_vnf_price_list')
     @mock.patch.object(Server, '_get_pil_info')
-    def test_get_placement(self, mock_get_pil_info, mock_get_vnf_price_list, mock__get_nslcmop, mock__get_nsd,
+    @mock.patch.object(Server, '_get_projects')
+    def test_get_placement(self, mock_get_projects, mock_get_pil_info, mock_get_vnf_price_list, mock__get_nslcmop,
+                           mock__get_nsd,
                            mock__get_vim_accounts,
                            mock_create_ns_placement_data,
                            mock_do_placement_computation):
@@ -377,6 +381,7 @@ class TestServer(TestCase):
         mock_do_placement_computation.return_value = placement_ret_val
         _run(server.get_placement(nslcmop_record_wo_pinning['id']))
 
+        self.assertTrue(mock_get_projects.called, '_get_projects not called as expected')
         self.assertTrue(mock_get_vnf_price_list.called, '_get_vnf_price_list not called as expected')
         self.assertTrue(mock_get_pil_info.called, '_get_pil_info not called as expected')
         self.assertTrue(mock__get_nslcmop.called, '_get_nslcmop not called as expected')
@@ -422,7 +427,9 @@ class TestServer(TestCase):
     @mock.patch.object(Server, '_get_nslcmop')
     @mock.patch.object(Server, '_get_vnf_price_list')
     @mock.patch.object(Server, '_get_pil_info')
-    def test_get_placement_with_pinning(self, mock_get_pil_info, mock_get_vnf_price_list, mock__get_nslcmop,
+    @mock.patch.object(Server, '_get_projects')
+    def test_get_placement_with_pinning(self, mock_get_projects, mock_get_pil_info, mock_get_vnf_price_list,
+                                        mock__get_nslcmop,
                                         mock__get_nsd, mock__get_vim_accounts,
                                         mock_create_ns_placement_data,
                                         mock_do_placement_computation):
@@ -443,6 +450,7 @@ class TestServer(TestCase):
         mock_do_placement_computation.return_value = placement_ret_val
         _run(server.get_placement(nslcmop_record_w_pinning['id']))
 
+        self.assertTrue((mock_get_projects.called, '_get_projects not called as expected'))
         self.assertTrue(mock_get_vnf_price_list.called, '_get_vnf_price_list not called as expected')
         self.assertTrue(mock_get_pil_info.called, '_get_pil_info not called as expected')
         self.assertTrue(mock__get_nslcmop.called, '_get_nslcmop not called as expected')
