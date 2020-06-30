@@ -31,7 +31,14 @@ PLA is an optional module in OSM. It is installed together with OSM by adding ``
 `$ ./install_osm.sh --pla`
 
 ## Create the price lists
-The price list for compute determines the price for each VNF at each VIM (or Point of Presence - PoP). The file (vnf_price_list.yaml) is written in Yaml and is exemplified below.
+The price list for compute determines the price for each VNF at each VIM (or Point of Presence - PoP). 
+The file (vnf_price_list.yaml) is written in Yaml. There are two different structures possible for the price list file.
+In the first alternative prices for a specific VIM are directly associated with a vnfd. 
+In the second alternative prices for a specific VIM are also associated with a OSM project id.
+The latter alternative makes it possible for different OMS users to have different price models depending on their 
+associated OMS project.
+
+###vnf_price_lists.yaml - Alternative one
 
 ```
 - vnfd: testVnfOne
@@ -42,12 +49,6 @@ The price list for compute determines the price for each VNF at each VIM (or Poi
     - vim_url: http://10.234.12.44:5000/v3
       vim_name: OpenStack2
       price: 9
-    - vim_url: http://10.234.12.46:5000/v3
-      vim_name: OpenStack3
-      price: 8
-    - vim_url: http://10.234.12.43:5000/v3
-      vim_name: OpenStack4
-      price: 7
 - vnfd: hackfest_multivdu-vnf
   prices:
     - vim_url: http://10.234.12.47:5000/v3
@@ -56,12 +57,43 @@ The price list for compute determines the price for each VNF at each VIM (or Poi
     - vim_url: http://10.234.12.44:5000/v3
       vim_name: OpenStack2
       price: 18
-    - vim_url: http://10.234.12.46:5000/v3
-      vim_name: OpenStack3
-      price: 19
-    - vim_url: http://10.234.12.43:5000/v3
-      vim_name: OpenStack4      
-      price: 20
+```
+###vnf_price_list.yaml - Alternative two
+```
+- vnfd: testVnfOne
+    project_alfa:
+      prices:
+        - vim_url: http://10.234.12.47:5000/v3
+          vim_name: OpenStack1
+          price: 10
+        - vim_url: http://10.234.12.44:5000/v3
+          vim_name: OpenStack2
+          price: 9
+    project_beta:
+      prices:
+        - vim_url: http://10.234.12.47:5000/v3
+          vim_name: OpenStack1
+          price: 9
+        - vim_url: http://10.234.12.44:5000/v3
+          vim_name: OpenStack2
+          price: 10
+- vnfd: hackfest_multivdu-vnf
+    project_alfa:
+      prices:
+        - vim_url: http://10.234.12.47:5000/v3
+          vim_name: OpenStack1
+          price: 17
+        - vim_url: http://10.234.12.44:5000/v3
+          vim_name: OpenStack2
+          price: 18
+    project_beta:
+      prices:
+        - vim_url: http://10.234.12.47:5000/v3
+          vim_name: OpenStack1
+          price: 7
+        - vim_url: http://10.234.12.44:5000/v3
+          vim_name: OpenStack2
+          price: 8
 ```
 
 The price list for transport links between VIMs (PoP Interconnecting Link – PiL). In current release the price is given per link without any consideration to BW or other QoS parameter. The file (pil_price_list.yaml) is written in Yaml and is exemplified below. Note: In current OSM release the link characteristics are hard coded into this file, in future releases this data should be retrieved from the infrastructure by monitoring mechanisms.
@@ -73,43 +105,43 @@ pil:
     pil_latency: 120
     pil_jitter: 12
     pil_endpoints:
-      - http://10.234.12.47:5000/v3
-      - http://10.234.12.44:5000/v3
+      - OpenStack1
+      - OpenStack2
   - pil_description: Link between OpenStack1 and OpenStack3
     pil_price: 13
     pil_latency: 130
     pil_jitter: 13
     pil_endpoints:
-      - http://10.234.12.47:5000/v3
-      - http://10.234.12.46:5000/v3
+      - OpenStack1
+      - OpenStack3
   - pil_description: Link between OpenStack1 and OpenStack4
     pil_price: 14
     pil_latency: 140
     pil_jitter: 14
     pil_endpoints:
-      - http://10.234.12.47:5000/v3
-      - http://10.234.12.43:5000/v3
+      - OpenStack1
+      - OpenStack4
   - pil_description: Link between OpenStack2 and OpenStack3
     pil_price: 23
     pil_latency: 230
     pil_jitter: 23
     pil_endpoints:
-      - http://10.234.12.44:5000/v3
-      - http://10.234.12.46:5000/v3
+      - OpenStack2
+      - OpenStack3
   - pil_description: Link between OpenStack2 and OpenStack4
     pil_price: 24
     pil_latency: 240
     pil_jitter: 24
     pil_endpoints:
-      - http://10.234.12.44:5000/v3
-      - http://10.234.12.43:5000/v3
+      - OpenStack2
+      - OpenStack4
   - pil_description: Link between OpenStack3 and OpenStack4
     pil_price: 34
     pil_latency: 340
     pil_jitter: 34
     pil_endpoints:
-      - http://10.234.12.46:5000/v3
-      - http://10.234.12.43:5000/v3
+      - OpenStack3
+      - OpenStack4
 
 ```
 

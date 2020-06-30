@@ -151,12 +151,12 @@ class NsPlacementDataFactory(object):
         trp_link_characteristics = [[0 if col == row else 0x7fff for col in range(num_vims)] for row in range(num_vims)]
         for pil in self._pil_info['pil']:
             if characteristics in pil.keys():
-                url1 = pil['pil_endpoints'][0]
-                url2 = pil['pil_endpoints'][1]
+                ep1 = pil['pil_endpoints'][0]
+                ep2 = pil['pil_endpoints'][1]
                 # only consider links between applicable vims
-                if url1 in self._vim_accounts_info and url2 in self._vim_accounts_info:
-                    idx1 = self._vim_accounts_info[url1]['idx']
-                    idx2 = self._vim_accounts_info[url2]['idx']
+                if ep1 in self._vim_accounts_info and ep2 in self._vim_accounts_info:
+                    idx1 = self._vim_accounts_info[ep1]['idx']
+                    idx2 = self._vim_accounts_info[ep2]['idx']
                     trp_link_characteristics[idx1][idx2] = pil[characteristics]
                     trp_link_characteristics[idx2][idx1] = pil[characteristics]
 
@@ -170,17 +170,18 @@ class NsPlacementDataFactory(object):
         """
         vld_desc = []
         for vld in self._nsd['vld']:
-            if vld['mgmt-network'] is False:
+            if vld.get('mgmt-network', False) is False:
                 vld_desc_entry = {}
                 cp_refs = [ep_ref['member-vnf-index-ref'] for ep_ref in vld['vnfd-connection-point-ref']]
-                vld_desc_entry['cp_refs'] = cp_refs
-                if 'link-constraint' in vld.keys():
-                    for constraint in vld['link-constraint']:
-                        if constraint['constraint-type'] == 'LATENCY':
-                            vld_desc_entry['latency'] = constraint['value']
-                        elif constraint['constraint-type'] == 'JITTER':
-                            vld_desc_entry['jitter'] = constraint['value']
-                vld_desc.append(vld_desc_entry)
+                if len(cp_refs) == 2:
+                    vld_desc_entry['cp_refs'] = cp_refs
+                    if 'link-constraint' in vld.keys():
+                        for constraint in vld['link-constraint']:
+                            if constraint['constraint-type'] == 'LATENCY':
+                                vld_desc_entry['latency'] = constraint['value']
+                            elif constraint['constraint-type'] == 'JITTER':
+                                vld_desc_entry['jitter'] = constraint['value']
+                    vld_desc.append(vld_desc_entry)
 
         # create candidates from instantiate params
         if self._order_constraints is not None:
@@ -242,8 +243,9 @@ class NsPlacementDataFactory(object):
     def create_ns_placement_data(self):
         """populate NsPlacmentData object
         """
-        ns_placement_data = {'vim_accounts': [vim_data['id'] for
-                                              vim_data in self._vim_accounts_info.values()],
+        ns_placement_data = {'vim_accounts': [vim_data['id'] for _, vim_data in sorted(self._vim_accounts_info.items(),
+                                                                                       key=lambda item: item[1][
+                                                                                           'idx'])],
                              'trp_link_latency': self._produce_trp_link_characteristics_data('pil_latency'),
                              'trp_link_jitter': self._produce_trp_link_characteristics_data('pil_jitter'),
                              'trp_link_price_list': self._produce_trp_link_characteristics_data('pil_price'),
