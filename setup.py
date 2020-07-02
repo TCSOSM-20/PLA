@@ -21,8 +21,7 @@ def parse_requirements(requirements):
 
 
 _name = 'osm_pla'
-#  _version_command = ('git describe --match v* --tags --long --dirty', 'pep440-git-full') FIXME we have no tags yet
-_version = '0.0.1'  # FIXME temporary workaround for _version_command
+_version_command = ('git describe --match v* --tags --long --dirty', 'pep440-git-full')
 _description = 'OSM Placement Module'
 _author = "Lars Goran Magnusson"
 _author_email = 'lars-goran.magnusson@arctoslabs.com'
@@ -34,8 +33,7 @@ _url = 'https://osm.etsi.org/gitweb?p=osm/PLA.git;a=tree'
 
 setup(
     name=_name,
-    # version_command=_version_command, FIXME temporary fix
-    version=_version,
+    version_command=_version_command,
     description=_description,
     long_description=open('README.md', encoding='utf-8').read(),
     author=_author,
