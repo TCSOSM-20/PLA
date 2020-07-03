@@ -47,7 +47,7 @@ setup(
     install_requires=[
         'osm-common',
         'jinja2==2.10.3',
-        'pymzn==0.18.*',
+        'pymzn==0.18.3',
         'pyyaml==5.1.2'
     ],
     dependency_links=[
