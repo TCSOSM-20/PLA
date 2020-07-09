@@ -18,7 +18,7 @@ import itertools
 
 import pymzn
 from jinja2 import Environment
-from jinja2.loaders import FileSystemLoader
+from jinja2.loaders import FileSystemLoader, PackageLoader, ChoiceLoader
 
 
 class MznPlacementConductor(object):
@@ -88,7 +88,8 @@ class MznModelGenerator(object):
     NsPlacementData objects. Uses jinja2 as templating language for the model
     '''
     default_j2_template = "osm_pla_dynamic_template.j2"
-    template_search_path = ['osm_pla/placement', '../placement', '/pla/osm_pla/placement']
+    template_search_path = ['osm_pla/placement', '../placement', '/pla/osm_pla/placement',
+                            './', '/usr/lib/python3/dist-packages/osm_pla/placement']
 
     def __init__(self, log):
         '''
@@ -111,7 +112,9 @@ class MznModelGenerator(object):
 
     def _load_jinja_template(self, template_name=default_j2_template):
         """loads the jinja template used for model generation"""
-        env = Environment(loader=FileSystemLoader(MznModelGenerator.template_search_path))
+        loader1 = FileSystemLoader(MznModelGenerator.template_search_path)
+        loader2 = PackageLoader('osm_pla', '.')
+        env = Environment(loader=ChoiceLoader([loader1, loader2]))
         return env.get_template(template_name)
 
 

@@ -16,5 +16,5 @@
 # under the License.
 include requirements.txt
 include README.md
-recursive-include osm_pla *.py *.sh *.yaml
+recursive-include osm_pla *.py *.sh *.yaml *.j2
 recursive-include devops-stages *
